@@ -137,6 +137,10 @@ header h1 {
     font-family: 'Courier New', monospace;
     font-size: 0.9rem;
     flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
 }
 
 .icon-btn {
