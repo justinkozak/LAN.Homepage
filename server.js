@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs').promises;
 const path = require('path');
+const http = require('http');
+const https = require('https');
 
 const app = express();
 const PORT = 3000;
@@ -122,6 +124,92 @@ app.post('/api/servers/reorder', async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: 'Failed to reorder servers' });
+    }
+});
+
+// Helper function to check if a URL is online
+async function checkUrlStatus(url) {
+    if (!url || url.trim() === '') {
+        return false;
+    }
+
+    return new Promise((resolve) => {
+        try {
+            const urlObj = new URL(url);
+            const protocol = urlObj.protocol === 'https:' ? https : http;
+            
+            const options = {
+                method: 'HEAD',
+                timeout: 3000,
+                headers: {
+                    'User-Agent': 'Server-Dashboard-Status-Checker'
+                }
+            };
+
+            const req = protocol.request(url, options, (res) => {
+                resolve(res.statusCode >= 200 && res.statusCode < 500);
+            });
+
+            req.on('error', () => resolve(false));
+            req.on('timeout', () => {
+                req.destroy();
+                resolve(false);
+            });
+
+            req.end();
+        } catch (error) {
+            resolve(false);
+        }
+    });
+}
+
+// Check status of a single server
+app.get('/api/servers/:id/status', async (req, res) => {
+    try {
+        const data = await readData();
+        const server = data.servers.find(s => s.id === req.params.id);
+        
+        if (!server) {
+            return res.status(404).json({ error: 'Server not found' });
+        }
+
+        const [urlStatus, localIpStatus] = await Promise.all([
+            checkUrlStatus(server.url),
+            checkUrlStatus(server.localIp.startsWith('http') ? server.localIp : `http://${server.localIp}`)
+        ]);
+
+        res.json({
+            id: server.id,
+            urlStatus,
+            localIpStatus
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to check status' });
+    }
+});
+
+// Check status of all servers
+app.get('/api/servers/status/all', async (req, res) => {
+    try {
+        const data = await readData();
+        const statusChecks = await Promise.all(
+            data.servers.map(async (server) => {
+                const [urlStatus, localIpStatus] = await Promise.all([
+                    checkUrlStatus(server.url),
+                    checkUrlStatus(server.localIp.startsWith('http') ? server.localIp : `http://${server.localIp}`)
+                ]);
+
+                return {
+                    id: server.id,
+                    urlStatus,
+                    localIpStatus
+                };
+            })
+        );
+
+        res.json({ statuses: statusChecks });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to check statuses' });
     }
 });
 

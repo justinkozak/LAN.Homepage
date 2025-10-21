@@ -137,6 +137,24 @@ header h1 {
     overflow: hidden;
 }
 
+.status-indicator {
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: color 0.3s ease;
+    color: var(--text-muted);
+}
+
+.status-indicator.online {
+    color: #10b981;
+    text-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
+}
+
+.status-indicator.offline {
+    color: #ef4444;
+    text-shadow: 0 0 4px rgba(239, 68, 68, 0.5);
+}
+
 .value {
     color: var(--text-primary);
     font-family: 'Courier New', monospace;

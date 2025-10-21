@@ -62,6 +62,7 @@
                         <div class="info-row">
                             <span class="label">URL:</span>
                             <div class="value-group">
+                                <span class="status-indicator" data-server-id="${server.id}" data-type="url" title="Checking...">●</span>
                                 <span class="value" title="${escapeHtml(server.url)}">${escapeHtml(server.url)}</span>
                                 <button class="icon-btn copy-btn" onclick="copyToClipboard('${escapeHtml(server.url)}')" title="Copy">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -82,6 +83,7 @@
                         <div class="info-row">
                             <span class="label">Local:</span>
                             <div class="value-group">
+                                <span class="status-indicator" data-server-id="${server.id}" data-type="local" title="Checking...">●</span>
                                 <span class="value" title="${escapeHtml(server.localIp)}">${escapeHtml(server.localIp)}</span>
                                 <button class="icon-btn copy-btn" onclick="copyToClipboard('${escapeHtml(server.localIp)}')" title="Copy">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -141,6 +143,49 @@
 
         // Load servers on page load
         loadServers();
+
+        // Check server statuses
+        async function checkServerStatuses() {
+            try {
+                const response = await fetch('/api/servers/status/all');
+                const data = await response.json();
+                
+                data.statuses.forEach(status => {
+                    // Update URL status
+                    const urlIndicator = document.querySelector(`[data-server-id="${status.id}"][data-type="url"]`);
+                    if (urlIndicator) {
+                        updateStatusIndicator(urlIndicator, status.urlStatus);
+                    }
+                    
+                    // Update Local IP status
+                    const localIndicator = document.querySelector(`[data-server-id="${status.id}"][data-type="local"]`);
+                    if (localIndicator) {
+                        updateStatusIndicator(localIndicator, status.localIpStatus);
+                    }
+                });
+            } catch (error) {
+                console.error('Error checking server statuses:', error);
+            }
+        }
+
+        function updateStatusIndicator(indicator, isOnline) {
+            if (isOnline) {
+                indicator.classList.remove('offline');
+                indicator.classList.add('online');
+                indicator.title = 'Online';
+            } else {
+                indicator.classList.remove('online');
+                indicator.classList.add('offline');
+                indicator.title = 'Offline';
+            }
+        }
+
+        // Check statuses after servers are loaded
+        setTimeout(() => {
+            checkServerStatuses();
+            // Refresh statuses every 30 seconds
+            setInterval(checkServerStatuses, 30000);
+        }, 500);
     </script>
 </body>
 </html>
