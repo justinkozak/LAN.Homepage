@@ -112,6 +112,8 @@ header h1 {
     gap: 0.5rem;
     padding: 0.5rem 0;
     border-bottom: 1px solid var(--border-color);
+    min-width: 0;
+    width: 100%;
 }
 
 .info-row:last-of-type {
@@ -123,6 +125,7 @@ header h1 {
     color: var(--text-secondary);
     min-width: 60px;
     font-size: 0.9rem;
+    flex-shrink: 0;
 }
 
 .value-group {
@@ -130,17 +133,20 @@ header h1 {
     align-items: center;
     gap: 0.5rem;
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .value {
     color: var(--text-primary);
     font-family: 'Courier New', monospace;
     font-size: 0.9rem;
-    flex: 1;
+    flex: 1 1 auto;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     min-width: 0;
+    max-width: 100%;
 }
 
 .icon-btn {
@@ -154,6 +160,7 @@ header h1 {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .icon-btn:hover {
