@@ -1,0 +1,31 @@
+{
+  "servers": [
+    {
+      "id": "1",
+      "title": "Production Web Server",
+      "url": "https://example.com",
+      "localIp": "192.168.1.100:8080",
+      "sshIp": "192.168.1.100",
+      "username": "admin",
+      "description": "Main production web server hosting the company website and APIs."
+    },
+    {
+      "id": "2",
+      "title": "Development Database",
+      "url": "http://dev-db.local",
+      "localIp": "192.168.1.101:5432",
+      "sshIp": "192.168.1.101",
+      "username": "dbadmin",
+      "description": "PostgreSQL database server for development and testing purposes."
+    },
+    {
+      "id": "3",
+      "title": "Media Server",
+      "url": "http://media.local",
+      "localIp": "192.168.1.102:3000",
+      "sshIp": "192.168.1.102",
+      "username": "mediauser",
+      "description": "Handles all media processing, storage, and streaming services."
+    }
+  ]
+}

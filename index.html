@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Server Dashboard</h1>
+            <p class="subtitle">Local & Online Server Management</p>
+        </header>
+
+        <div id="servers-grid" class="grid">
+            <!-- Server tiles will be dynamically inserted here -->
+        </div>
+
+        <div class="footer-links">
+            <a href="add.html" class="subtle-link">+ Add Server</a>
+            <span class="separator">|</span>
+            <a href="manage.html" class="subtle-link">Manage</a>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="script.js"></script>
+    <script>
+        // Load and display servers
+        async function loadServers() {
+            try {
+                const response = await fetch('/api/servers');
+                const data = await response.json();
+                displayServers(data.servers || []);
+            } catch (error) {
+                console.error('Error loading servers:', error);
+                displayServers([]);
+            }
+        }
+
+        function displayServers(servers) {
+            const grid = document.getElementById('servers-grid');
+            
+            if (servers.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <p>No servers configured yet.</p>
+                        <a href="add.html" class="add-button">Add Your First Server</a>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = servers.map(server => `
+                <div class="server-tile">
+                    <div class="tile-header">
+                        <h2>${escapeHtml(server.title)}</h2>
+                    </div>
+                    <div class="tile-body">
+                        <div class="info-row">
+                            <span class="label">URL:</span>
+                            <div class="value-group">
+                                <span class="value">${escapeHtml(server.url)}</span>
+                                <button class="icon-btn copy-btn" onclick="copyToClipboard('${escapeHtml(server.url)}')" title="Copy">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                </button>
+                                <a href="${escapeHtml(server.url)}" target="_blank" class="icon-btn go-btn" title="Open">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                        <polyline points="15 3 21 3 21 9"></polyline>
+                                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="label">Local:</span>
+                            <div class="value-group">
+                                <span class="value">${escapeHtml(server.localIp)}</span>
+                                <button class="icon-btn copy-btn" onclick="copyToClipboard('${escapeHtml(server.localIp)}')" title="Copy">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                </button>
+                                <a href="http://${escapeHtml(server.localIp)}" target="_blank" class="icon-btn go-btn" title="Open">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                        <polyline points="15 3 21 3 21 9"></polyline>
+                                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="label">SSH:</span>
+                            <div class="value-group">
+                                <span class="value">${escapeHtml(server.sshIp)}</span>
+                                <button class="icon-btn copy-btn" onclick="copyToClipboard('${escapeHtml(server.sshIp)}')" title="Copy">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                </button>
+                                <button class="icon-btn go-btn" onclick="copyToClipboard('ssh ${escapeHtml(server.username)}@${escapeHtml(server.sshIp)}')" title="Copy SSH command">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="4 17 10 11 4 5"></polyline>
+                                        <line x1="12" y1="19" x2="20" y2="19"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="label">User:</span>
+                            <div class="value-group">
+                                <span class="value">${escapeHtml(server.username)}</span>
+                                <button class="icon-btn copy-btn" onclick="copyToClipboard('${escapeHtml(server.username)}')" title="Copy">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="description">
+                            <p>${escapeHtml(server.description)}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load servers on page load
+        loadServers();
+    </script>
+</body>
+</html>

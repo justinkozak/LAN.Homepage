@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Server - Server Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Add New Server</h1>
+            <a href="index.html" class="back-link">← Back to Dashboard</a>
+        </header>
+
+        <div class="form-container">
+            <form id="add-form">
+                <div class="form-group">
+                    <label for="title">Server Title *</label>
+                    <input type="text" id="title" name="title" required placeholder="e.g., Production Web Server">
+                </div>
+
+                <div class="form-group">
+                    <label for="url">URL/Alias</label>
+                    <input type="text" id="url" name="url" placeholder="e.g., https://example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="localIp">Local IP Address & Port</label>
+                    <input type="text" id="localIp" name="localIp" placeholder="e.g., 192.168.1.100:8080">
+                </div>
+
+                <div class="form-group">
+                    <label for="sshIp">SSH IP Address</label>
+                    <input type="text" id="sshIp" name="sshIp" placeholder="e.g., 192.168.1.100">
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Admin Username</label>
+                    <input type="text" id="username" name="username" placeholder="e.g., admin">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" placeholder="Brief description of what this server does..." rows="4"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Add Server</button>
+                    <a href="index.html" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.getElementById('add-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                title: document.getElementById('title').value,
+                url: document.getElementById('url').value || '',
+                localIp: document.getElementById('localIp').value || '',
+                sshIp: document.getElementById('sshIp').value || '',
+                username: document.getElementById('username').value || '',
+                description: document.getElementById('description').value || ''
+            };
+
+            try {
+                const response = await fetch('/api/servers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('✓ Server added successfully!', 'success');
+                    // Clear form
+                    this.reset();
+                    // Redirect to homepage after 1 second
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                } else {
+                    showMessage('Error: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            }
+        });
+
+        function showMessage(msg, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = msg;
+            messageDiv.className = 'message ' + type;
+            messageDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
